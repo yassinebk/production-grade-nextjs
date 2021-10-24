@@ -43,7 +43,7 @@ export const getStaticProps = () => {
 
   return {
     props: {
-      content: home.published
+      content: home.published,
     }
 
   }

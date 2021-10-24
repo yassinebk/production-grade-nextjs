@@ -1,8 +1,8 @@
 import React from 'react'
+import fs from 'fs'
 import { Pane, majorScale } from 'evergreen-ui'
 import matter from 'gray-matter'
 import path from 'path'
-import fs from 'fs'
 import orderby from 'lodash.orderby'
 import Container from '../../components/container'
 import HomeNav from '../../components/homeNav'
@@ -27,7 +27,30 @@ const Blog = ({ posts }) => {
     </Pane>
   )
 }
+export function getStaticProps() {
+  const cmsPosts = postsFromCMS.published.map((p) => {
+    const { data } = matter(p)
+    return data;
+  })
 
+  const filePaths = path.join(process.cwd(), 'posts')
+  const fileNames = fs.readdirSync(filePaths)
+  const filePosts = fileNames.map((name) => {
+    const fullPath = path.join(filePaths, name)
+    const file = fs.readFileSync(fullPath, 'utf-8')
+    console.log(file)
+    const { data } = matter(file)
+    return data
+  })
+
+  const posts = [...cmsPosts, ...filePosts]
+
+  return {
+    props: {
+      posts,
+    },
+  }
+}
 Blog.defaultProps = {
   posts: [],
 }
