@@ -72,6 +72,8 @@ App.defaultProps = {
   folders: [],
 }
 
+export async function getServerSideProps() {}
+
 /**
  * Catch all handler. Must handle all different page
  * states.

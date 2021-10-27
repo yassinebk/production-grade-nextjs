@@ -27,10 +27,10 @@ const Blog = ({ posts }) => {
     </Pane>
   )
 }
-export function getStaticProps() {
-  const cmsPosts = postsFromCMS.published.map((p) => {
+export function getStaticProps(ctx) {
+  const cmsPosts = (ctx.preview ? postsFromCMS.draft : postsFromCMS.published).map((p) => {
     const { data } = matter(p)
-    return data;
+    return data
   })
 
   const filePaths = path.join(process.cwd(), 'posts')
