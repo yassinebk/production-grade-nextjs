@@ -6,6 +6,11 @@ import { useRouter } from 'next/router'
 import { Post } from '../../types'
 import Container from '../../components/container'
 import HomeNav from '../../components/homeNav'
+import fs from 'fs'
+import path from 'path'
+import matter from 'gray-matter'
+import { posts } from '../../content'
+import renderToString from 'next-mdx-remote/render-to-string'
 
 const BlogPost: FC<Post> = ({ source, frontMatter }) => {
   const content = hydrate(source)
@@ -44,6 +49,49 @@ BlogPost.defaultProps = {
   frontMatter: { title: 'default title', summary: 'summary', publishedOn: '' },
 }
 
+export const getStaticPaths = () => {
+  const postsPath = path.join(process.cwd(), 'posts')
+
+  const filenames = fs.readdirSync(postsPath)
+  const slugs = filenames.map((name) => {
+    const filePath = path.join(postsPath, name)
+    const file = fs.readFileSync(filePath, 'utf-8')
+    const { data } = matter(file)
+    return data.slug
+  })
+  return {
+    paths: slugs.map((s) => ({
+      params: {
+        slug: s,
+      },
+    })),
+    fallback: true, // false =404 , true = gets the data
+  }
+}
+
+export const getStaticProps = async ({ params }) => {
+  let post
+
+  try {
+    const filesPath = path.join(process.cwd(), 'posts', `${params.slug}.mdx`)
+    post = fs.readFileSync(filesPath, 'utf-8')
+  } catch {
+    const cmsPosts = posts.published.map((p) => {
+      return matter(p)
+    })
+    const match = cmsPosts.find((p) => p.data.slug === params.slug)
+    post = match.content
+  }
+  const { data } = matter(post)
+  const mdxSource = await renderToString(post, { scope: data })
+
+  return {
+    props: {
+      source: mdxSource,
+      frontMatter: data,
+    },
+  }
+}
 /**
  * Need to get the paths here
  * then the the correct post for the matching path

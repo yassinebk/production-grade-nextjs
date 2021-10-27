@@ -1,10 +1,10 @@
+import { majorScale, Pane } from 'evergreen-ui'
 import React, { FC } from 'react'
-import { Pane, majorScale } from 'evergreen-ui'
 import Container from '../components/container'
+import FeatureSection from '../components/featureSection'
 import Hero from '../components/hero'
 import HomeNav from '../components/homeNav'
-import FeatureSection from '../components/featureSection'
-import { home } from "../content";
+import { home } from '../content'
 
 const Home: FC<{ content: { hero: any; features: any[] } }> = ({ content }) => {
   return (
@@ -28,7 +28,9 @@ const Home: FC<{ content: { hero: any; features: any[] } }> = ({ content }) => {
       </main>
       <footer>
         <Pane background="overlay" paddingY={majorScale(9)}>
-          <Container>hello</Container>
+          <Container>
+            <Pane></Pane>
+          </Container>
         </Pane>
       </footer>
     </Pane>
@@ -39,13 +41,11 @@ const Home: FC<{ content: { hero: any; features: any[] } }> = ({ content }) => {
  * Should really get this content from our CMS
  */
 
-export const getStaticProps = () => {
-
+export const getStaticProps = (ctx) => {
   return {
     props: {
-      content: home.published,
-    }
-
+      content: ctx.preview ? home.draft : home.published,
+    },
   }
 }
 
