@@ -22,7 +22,7 @@ const DocPane: FC<{ folder: any; doc: any }> = ({ folder, doc }) => {
         </Heading>
 
         <Pane display="flex" alignItems="center">
-          <Editor content={doc.content} docId={doc._id} />
+          <Editor content={doc.content} docId={doc._id}  />
         </Pane>
       </Pane>
     </Pane>

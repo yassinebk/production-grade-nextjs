@@ -1,15 +1,16 @@
-import React, { FC, useState } from 'react'
-import { Pane, Dialog, majorScale } from 'evergreen-ui'
-import { useRouter } from 'next/router'
-import Logo from '../../components/logo'
-import FolderList from '../../components/folderList'
-import NewFolderButton from '../../components/newFolderButton'
-import User from '../../components/user'
-import FolderPane from '../../components/folderPane'
-import DocPane from '../../components/docPane'
-import NewFolderDialog from '../../components/newFolderDialog'
+import { Dialog, majorScale, Pane } from 'evergreen-ui'
+import matter from 'gray-matter'
 import { getSession, useSession } from 'next-auth/client'
-import { UserSession } from '../../types'
+import { useRouter } from 'next/router'
+import React, { FC, useState } from 'react'
+import DocPane from '../../components/docPane'
+import FolderList from '../../components/folderList'
+import FolderPane from '../../components/folderPane'
+import Logo from '../../components/logo'
+import NewFolderButton from '../../components/newFolderButton'
+import NewFolderDialog from '../../components/newFolderDialog'
+import User from '../../components/user'
+import { folder, doc, connectToDB } from '../../db'
 
 const App: FC<{ folders?: any[]; activeFolder?: any; activeDoc?: any; activeDocs?: any[] }> = ({
   folders,
@@ -62,7 +63,7 @@ const App: FC<{ folders?: any[]; activeFolder?: any; activeDoc?: any; activeDocs
           <NewFolderButton onClick={() => setIsShown(true)} />
         </Pane>
         <Pane>
-          <FolderList folders={[{ id: '1212', name: 'folder1' }]} />{' '}
+          <FolderList folders={folders} />{' '}
         </Pane>
       </Pane>
       <Pane marginLeft={300} width="calc(100vw - 300px)" height="100vh" overflowY="auto" position="relative">
@@ -80,8 +81,27 @@ App.defaultProps = {
 
 export async function getServerSideProps(ctx) {
   const session = await getSession(ctx)
+  if (!session) {
+    return {
+      props: {
+        session,
+      },
+    }
+  }
+  const { db } = await connectToDB()
+  const props: any = {}
+  props.folders = await folder.getFolders(db, session.user.id)
+
+  if (ctx.params.id) {
+    props.activeFolder = props.folders.find((f) => f._id === ctx.params.id[0])
+    props.activeDocs = await doc.getDocsByFolder(db, props.activeFolder._id)
+    console.log(ctx.params)
+    if (ctx.params.id.length > 1) {
+      props.activeDoc = props.activeDocs.find((d) => d._id === ctx.params.id[1])
+    }
+  }
   return {
-    props: { session },
+    props,
   }
 }
 /**
